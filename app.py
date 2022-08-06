@@ -21,26 +21,34 @@ modelcheck.eval()
 modelcheck.conf = 0.45  # confidence threshold (0-1)
 modelcheck.iou = 0.45  # NMS IoU threshold (0-1) 
 from io import BytesIO
-
+def getvalue(dataf,name):
+    rslt_df = dataf.loc[dataf['name'] == name]
+    if rslt_df.empty:
+        return 0
+    else:
+        return int(rslt_df.iloc[0]['qty'])
 def gen():
     
-    cap=cv2.VideoCapture(0)
+    cap=cv2.VideoCapture(1)
 
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 640)
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
 
     # Read until video is completed
-    count=0
-    chap=0
-    lines=0
-    count_frames=0
-    status=0
-    persent=0
-    product_ok=0
-    product_ng=0
+    triangle_now=0
+    circle_now=0
+    rectangle_now=0
+
+    triangle_bf=0
+    circle_bf=0
+    rectangle_bf=0
+
+    triangle_count=0
+    circle_count=0
+    rectangle_count=0
+
     while(cap.isOpened()):
         
-        # Capture frame-by-fram ## read the camera frame
         success, frame = cap.read()
         imgorg=frame
         if success == True:
@@ -54,7 +62,7 @@ def gen():
             df=results.pandas().xyxy[0]
             df = df.sort_values(['ymin', 'xmin'],ascending=[False, True])
             (img_W, img_H) = (640, 640)
-            (Y1, Y2) = (300, 340)
+            (Y1, Y2) = (200, 240)
 
             #กรองเฉพาะจุดที่ตรวจได้ในระยะ
             df=df[(df['ymin']>Y1)]
@@ -67,16 +75,40 @@ def gen():
             if df.empty:
                 print('DataFrame is empty!')
             else:
-                df_sim=df.groupby(['name'])['name'].count().reset_index()
-                display(df_sim)
+                df_sim=df.groupby(['name'])['name'].count().reset_index(name='qty')
+                #display(df_sim)
+
+            if df.empty:
+                triangle_now=0
+                circle_now=0
+                rectangle_now=0
+                triangle_bf=0
+                circle_bf=0
+                rectangle_bf=0
+            else:
+                rectangle_now=getvalue(df_sim,"rectangle")
+                triangle_now=getvalue(df_sim,"triangle")
+                circle_now=getvalue(df_sim,"circle")
+
+                if rectangle_now>rectangle_bf:
+                    rectangle_bf=rectangle_now
+                else:
+                    rectangle_count+=rectangle_bf-rectangle_now
+                    rectangle_bf=rectangle_now
+                
+                if triangle_now>triangle_bf:
+                    triangle_bf=triangle_now
+                else:
+
+
 
             img_BGR = cv2.putText(img_BGR, 'Detected', (50,50), cv2.FONT_HERSHEY_COMPLEX, 0.4,(0,255,255),1) 
-            imgs = cv2.line(img_BGR, (0,Y1), ((img_W-1),Y1), (255,255,0), 2)
-            imgs = cv2.line(img_BGR, (0,Y2), ((img_W-1),Y2), (255,255,0), 2)
+            cv2.line(img_BGR, (0,Y1), ((img_W-1),Y1), (255,255,0), 2)
+            cv2.line(img_BGR, (0,Y2), ((img_W-1),Y2), (255,255,0), 2)
 
             #img_BGR = cv2.putText(img_BGR, 'Triangle = '+str(chap), (50,100), cv2.FONT_HERSHEY_COMPLEX, 0.4,(0,255,255),1) 
             #img_BGR = cv2.putText(img_BGR, 'Circle = '+str(lines), (50,125), cv2.FONT_HERSHEY_COMPLEX, 0.4,(0,255,255),1) 
-            #img_BGR = cv2.putText(img_BGR, 'Square = '+str(persent), (50,150), cv2.FONT_HERSHEY_COMPLEX, 0.4,(0,255,255),1) 
+            #img_BGR = cv2.putText(img_BGR, 'Rectangle = '+str(persent), (50,150), cv2.FONT_HERSHEY_COMPLEX, 0.4,(0,255,255),1) 
         else:
             break
 
