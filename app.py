@@ -64,8 +64,11 @@ def gen():
             img = np.squeeze(results.render()) #RGB
             img_BGR = cv2.cvtColor(img, cv2.COLOR_RGB2BGR) #BGR
             
-            df_sim=df.groupby(['name'])['name'].count().reset_index()
-            display(df_sim)
+            if df.empty:
+                print('DataFrame is empty!')
+            else:
+                df_sim=df.groupby(['name'])['name'].count().reset_index()
+                display(df_sim)
 
             img_BGR = cv2.putText(img_BGR, 'Detected', (50,50), cv2.FONT_HERSHEY_COMPLEX, 0.4,(0,255,255),1) 
             imgs = cv2.line(img_BGR, (0,Y1), ((img_W-1),Y1), (255,255,0), 2)
