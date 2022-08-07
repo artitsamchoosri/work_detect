@@ -38,6 +38,7 @@ def getvalue(dataf,name):
     else:
         return int(rslt_df.iloc[0]['qty'])
 def gen():
+    #สร้างตัวแปรนับ
     global rectangle_count,rectangle_bf,rectangle_now
     global circle_count,circle_bf,circle_now
     global triangle_count,triangle_bf,triangle_now
@@ -50,6 +51,7 @@ def gen():
 
     while(cap.isOpened()):
         
+        #อ่านรูปจากกล้อง
         success, frame = cap.read()
         imgorg=frame
         if success == True:
@@ -95,6 +97,7 @@ def gen():
                 circle_bf=0
                 rectangle_bf=0
             else:
+                #กระบวนการนับจำนวน
                 rectangle_now=getvalue(df_sim,"rectangle")
                 triangle_now=getvalue(df_sim,"triangle")
                 circle_now=getvalue(df_sim,"circle")
@@ -113,9 +116,12 @@ def gen():
             print("rectangle_bf="+str(rectangle_bf))
             print("rectangle_count="+str(rectangle_count))
             img_BGR = cv2.putText(img_BGR, 'Detected', (50,50), cv2.FONT_HERSHEY_COMPLEX, 0.4,(0,255,255),1) 
+
+            #วาดเส้น
             cv2.line(img_BGR, (0,Y1), ((img_W-1),Y1), (255,255,0), 2)
             cv2.line(img_BGR, (0,Y2), ((img_W-1),Y2), (255,255,0), 2)
-
+            
+            #วาดตัวหนังสือ
             img_BGR = cv2.putText(img_BGR, 'Triangle = '+str(triangle_count), (50,100), cv2.FONT_HERSHEY_COMPLEX, 0.4,(0,255,255),1) 
             img_BGR = cv2.putText(img_BGR, 'Circle = '+str(circle_count), (50,125), cv2.FONT_HERSHEY_COMPLEX, 0.4,(0,255,255),1) 
             img_BGR = cv2.putText(img_BGR, 'Rectangle = '+str(rectangle_count), (50,150), cv2.FONT_HERSHEY_COMPLEX, 0.4,(0,255,255),1) 
